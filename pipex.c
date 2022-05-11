@@ -61,7 +61,7 @@ t_format	*pipex_init_var(char **argv, char **envp)
 	var->cmd1_args = ft_split(argv[2], ' ');
 	var->access_cmd1 = pipex_access(envp);
 	var->path_cmd1 = pipex_true_access(var->cmd1_args[0], var->access_cmd1);
-	var->fd_2 = open(argv[4], O_RDWR, O_CREAT, O_TRUNC, S_IRWXU);
+	var->fd_2 = open(argv[4], O_RDWR | O_CREAT | O_TRUNC | 0777);
 	var->cmd2_args = ft_split(argv[3], ' ');
 	var->access_cmd2 = pipex_access(envp);
 	var->path_cmd2 = pipex_true_access(var->cmd2_args[0], var->access_cmd2);
