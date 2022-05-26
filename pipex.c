@@ -6,7 +6,7 @@
 /*   By: mfusil <mfusil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/04 15:37:28 by mfusil            #+#    #+#             */
-/*   Updated: 2022/05/11 15:32:32 by mfusil           ###   ########.fr       */
+/*   Updated: 2022/05/26 17:37:13 by mfusil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,21 @@ t_format	*pipex_init_var(char **argv, char **envp)
 	var->cmd1_args = ft_split(argv[2], ' ');
 	var->access_cmd1 = pipex_access(envp);
 	var->path_cmd1 = pipex_true_access(var->cmd1_args[0], var->access_cmd1);
-	var->fd_2 = open(argv[4], O_RDWR | O_CREAT | O_TRUNC | 0777);
+	var->fd_2 = open(argv[4], O_RDWR | O_CREAT | O_TRUNC, 0777);
 	var->cmd2_args = ft_split(argv[3], ' ');
 	var->access_cmd2 = pipex_access(envp);
 	var->path_cmd2 = pipex_true_access(var->cmd2_args[0], var->access_cmd2);
 	return (var);
+}
+
+int	pipex_check_args(int argc)
+{
+	if (argc != 5)
+	{
+		write (STDERR_FILENO, "number of arguments invalid\n", 28);
+		return (1);
+	}
+	return (0);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -73,10 +83,11 @@ int	main(int argc, char **argv, char **envp)
 	t_format	*var;
 	int			error;
 
+	if (pipex_check_args(argc))
+		return (1);
 	var = pipex_init_var(argv, envp);
-	error = pipex_error(argc, var->fd_1, var->fd_2);
-	error += pipex_access_error(var->path_cmd1, var->path_cmd2,
-			argv[2], argv[3]);
+	error = pipex_error(var->fd_1, var->fd_2);
+	error += pipex_access_error(var->path_cmd1, var->path_cmd2);
 	if (error > 0)
 		return (1);
 	pipe(var->pipe);
@@ -90,7 +101,7 @@ int	main(int argc, char **argv, char **envp)
 		pipex_child_process(var, envp);
 	else
 	{
-		waitpid(var->child, NULL, 0);
+		waitpid(var->child, NULL, WNOHANG);
 		pipex_parent_process(var, envp);
 	}
 	free(var);
